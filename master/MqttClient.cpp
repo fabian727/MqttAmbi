@@ -1,24 +1,26 @@
 #include "MqttClient.h"
 #include <string.h>
+#include <vector>
+#include <sstream>
 
 #include "type.h"
 #include <sys/types.h>
 
-#include <vector>
-
 using namespace std;
 
-MqttClient::MqttClient(const char *id, const char *host, int port) : mosquittopp(id) {
+/* ToDo: SetUp last Will, all LEDS go black */
+
+MqttClient::MqttClient(const char *id, const char *host, const char *maintopic, int port) : mosquittopp(id) {
 	mosqpp::lib_init();			// Initialize libmosquitto
 
-	this->NumColours = 4;
-	this->NumLeds = 64;
-
-	this->MainTopic = "/desk/backlight";
+    this->MainTopic = maintopic;
 	int keepalive = 120; // seconds
 	connect(host, port, keepalive);		// Connect to MQTT Broker
-}
 
+/*set last will*/
+//	this->will_set(&topic[0],NumLeds*NumColors,&mqttStream[0]);
+
+}
 
 MqttClient::~MqttClient() {
 	this->disconnect();
@@ -33,10 +35,9 @@ void MqttClient::on_subcribe(int mid, int qos_count, const int *granted_qos) {
 }
 
 void MqttClient::createByteStream(int NumLeds,int NumColors,uint8_t *mqttStream, Color *averageColor) {
-	int color = 0;
 #define MinOffset 0
 #define MaxOffset 255
-	for(int leds=0;leds < NumLeds;leds++) {
+    for(int color=0, leds=0;leds < NumLeds;leds++) {
 		if(averageColor[leds].green < MinOffset) {
 			mqttStream[color++] = 0;
 		}else if (averageColor[leds].green > MaxOffset) {
@@ -58,60 +59,29 @@ void MqttClient::createByteStream(int NumLeds,int NumColors,uint8_t *mqttStream,
 		}else {
 			mqttStream[color++] = averageColor[leds].blue;
 		}
-		mqttStream[color++] = 0; //white (warm and/or cold)
+        if(NumColors >= 4) {
+            mqttStream[color++] = 0; //white (warm and/or cold)
+        }
 	}
 }
 
-void MqttClient::confNumLeds() {
-	string feedback;
- 	vector <uint8_t> mqttStream;
- 	int NumLeds = 1;
-	for(int i=0;i<this->NumColours;i++) {
-		mqttStream.insert(mqttStream.begin(),255);
-	}
+void MqttClient::createStringStream(int NumLeds,int NumColors,char *mqttStream, Color *averageColor) {
+    stringstream stream;
 
-	string topic = this->MainTopic + "/colours";
-	this->publish(NULL,&topic[0],(this->NumLeds*this->NumColours),&mqttStream[0]);
-	printf("-------------------------\n");
-	printf("How much LEDs do you use?\n");
-	printf("+ for more LEDs\n");
-	printf("- for less LEDs\n");
-	printf("number of LEDs\n");
-	printf("y, if last LED is shining\n");
-	printf("-------------------------\n");
-
-	int MaxNumLeds = NumLeds;
-	while(feedback[0] != 'y') {
-		scanf("%s",&feedback[0]);
-		if(feedback[0] == '+') {
-			this->NumLeds++;
-			MaxNumLeds++;
-			for(int i=0;i<NumColours;i++) {
-				mqttStream.insert(mqttStream.begin(),0);
-			}
-		} else if(feedback[0] == '-'){
-			this->NumLeds--;
-			mqttStream.erase(mqttStream.begin(), mqttStream.begin() + 4);
-			for(int i=0;i<NumColours;i++) {
-				mqttStream.insert(mqttStream.end(),0);
-			}
-		} else if(feedback[0] >= '0' && feedback[0] <= '9' ) {
-			int i = 0;
-			int num=0;
-			while(feedback[i] != '\n') {
-				num = num*10 + feedback[i]-'0';
-			}
-			if(num > 0) {
-				this->NumLeds = num;
-			}
-			if(num > MaxNumLeds) {
-				MaxNumLeds = num;
-			}
-		}
-		if(this->NumLeds < 1) {
-			this->NumLeds = 1;
-		}
-		this->publish(NULL,&topic[0],(MaxNumLeds*this->NumColours),&mqttStream[0]);
-	}
-	printf("got %i LEDs\n",NumLeds);
+    stream.str("");
+    for(int leds=0;leds<NumLeds;leds++) {
+        stream << std::setw(sizeof('T')*2)
+               << std::hex << averageColor[leds].green;
+        stream << std::setfill ('0') << std::setw(sizeof('T')*2)
+               << std::hex << averageColor[leds].red;
+        stream << std::setfill ('0') << std::setw(sizeof('T')*2)
+               << std::hex << averageColor[leds].blue;
+        if(NumColors >= 4) {
+        stream << "00";
+        }
+    }
+    int i =0;
+    while(stream.str()[i] != '\n' || stream.str()[i] != '\r') {
+        mqttStream[i] = stream.str()[i];
+    }
 }
