@@ -7,4 +7,4 @@
 
 WatchOut: the LEDs have a high current (>1A), so do not connect the power to the power out of the NodeMCU
 
-
+the used icon is published under the <a href="https://creativecommons.org/licenses/by/3.0/us/">Creative Common</a> and provided by <a href="https://thenounproject.com/term/color/24950/">thenounproject</a>
