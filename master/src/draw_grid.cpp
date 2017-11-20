@@ -1,3 +1,4 @@
+#include "draw_grid.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -5,11 +6,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-
-#include "type.h"
-#include "draw_grid.h"
-
-void draw_grid (type* image) {
+void draw_grid (XImage* image) {
 	FILE * file = NULL;
 	char filename[64];
 	sprintf(filename,"picture.ppm");
@@ -36,7 +33,7 @@ void draw_grid (type* image) {
 	fclose(file);
 }
 
-void draw_led_grid (Color *array, int width, int height) {
+void draw_led_grid (QColor *array, int width, int height) {
 	FILE * file = NULL;
 	char filename[64];
 	sprintf(filename,"leds.ppm");
@@ -53,9 +50,9 @@ void draw_led_grid (Color *array, int width, int height) {
 	int x,y;
 	for(y=0;y<height;y++) {
 		for(x=0;x<width;x++) {
-			fprintf(file,"%i ",array[y*width+x].red);
-			fprintf(file,"%i ",array[y*width+x].green);
-			fprintf(file,"%i ",array[y*width+x].blue);
+            fprintf(file,"%i ",array[y*width+x].red());
+            fprintf(file,"%i ",array[y*width+x].green());
+            fprintf(file,"%i ",array[y*width+x].blue());
 		    fprintf(file,"\n");
 		}
 	}

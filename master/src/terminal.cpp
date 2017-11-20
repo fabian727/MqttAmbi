@@ -14,7 +14,7 @@
 //ToDo: just opens terminal USB0. Needed root rights for this
 //ToDo: port to windows!
 
-terminal::terminal() : QThread() {
+Terminal::Terminal() : QThread() {
 #if defined(LinuxX11) || defined(LinuxWayland)
     fd = open("/dev/ttyUSB0", O_RDWR | O_NDELAY | O_NOCTTY);
     struct termios port_settings;      // structure to store the port settings in
@@ -55,7 +55,7 @@ terminal::terminal() : QThread() {
     height = pixmap.height();
 }
 
-void terminal::send(const char *data) {
+void Terminal::send(const char *data) {
     char n = 0;
     fd_set rdfs;
     struct timeval timeout;
@@ -77,7 +77,7 @@ void terminal::send(const char *data) {
         { tcflush(fd,TCOFLUSH); }
 }  }
 
-void terminal::receive(char *data) {
+void Terminal::receive(char *data) {
     int n = 1;
     fd_set rdfs;
     struct timeval timeout;
@@ -99,7 +99,7 @@ void terminal::receive(char *data) {
     }
 }
 
-void terminal::run() {
+void Terminal::run() {
     QColor colour;
     while(true)
     {
@@ -131,11 +131,11 @@ void terminal::run() {
     }
 }
 
-terminal::~terminal() {
+Terminal::~Terminal() {
     close(fd);
 }
 
-void terminal::setColour(int id, QColor colour) {
+void Terminal::setColour(int id, QColor colour) {
     if(id == 1)
     {
         newDataOne = "";
@@ -146,7 +146,7 @@ void terminal::setColour(int id, QColor colour) {
     }
 }
 
-QColor terminal::ambi(void) {
+QColor Terminal::ambi(void) {
     QPixmap pixmap = pixels->grabWindow(0) ;
     QImage screen = pixmap.toImage();
     QColor colour;
@@ -179,12 +179,12 @@ QColor terminal::ambi(void) {
     colour.setBlue(blue);
     return colour;
 }
-void terminal::setAmbiOne(bool checked) {
+void Terminal::setAmbiOne(bool checked) {
     AmbiOne = checked;
     string data = "1:255,0,0!\n\r";
     send(&data[0]);
 }
 
-void terminal::setAmbiTwo(bool checked) {
+void Terminal::setAmbiTwo(bool checked) {
     AmbiTwo = checked;
 }

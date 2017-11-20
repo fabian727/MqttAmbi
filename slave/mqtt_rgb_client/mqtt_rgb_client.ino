@@ -1,29 +1,55 @@
 #include <Adafruit_NeoPixel.h>
-#include <PubSubClient.h>
+#include <MQTTClient.h>
 #include <ESP8266WiFi.h>
 
 //for serial feedback
-#define DEBUG
-
-
+#undef DEBUG
+  
 //WS2812B Stripes
 #define Leds 32
 #define PinOne 2
 
-Adafruit_NeoPixel strip1 = Adafruit_NeoPixel(Leds, PinOne,
-NEO_GRBW + NEO_KHZ800);
-
 //Wifi & MQTT
-#define WifiSsid "My_SSID"
-#define WifiPassword "My_PWD"
+#define WifiSsid "Home WLAN"
+#define WifiPassword "Nrg3CKBu7XNEXSCc"
 
-#define MqttServer "Server.IP"
+#define MqttServer "192.168.2.12"
 #define MqttPort 1883
 #define MqttName "backlighter"
 
-WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient);
+/*
+ * Global Variables
+ */
+Adafruit_NeoPixel strip1 = Adafruit_NeoPixel(Leds, PinOne,NEO_GRBW + NEO_KHZ800);
 
+WiFiClient wifiClient;
+MQTTClient mqttClient(256);
+
+/*
+ * Mqtt Interrupt Message Receive Function
+ */
+void callback(MQTTClient *client, char topic[], char payload[], int length) {
+#ifdef DEBUG
+  Serial.print("Mqtt message incoming: ");
+  Serial.print(topic);
+  Serial.print(" - ");
+  Serial.print(length);
+  Serial.print(" - ");
+  Serial.print(payload);
+  Serial.println();
+#endif
+  if(strcmp(topic,"desk/backlight/colour") == 0) {
+    #ifdef DEBUG
+    Serial.println("got correct topic");
+    #endif
+    strip1.setBuffer((uint8_t*) &payload[0],0,length);
+    strip1.show() ;
+  }
+}
+
+/*
+ * setup
+ */
 void setup() {
 
   //setup WS2812B Stripes
@@ -36,10 +62,11 @@ void setup() {
 #ifdef DEBUG
   //Serial Setup
   Serial.begin(115200);
-  strip1.begin();
 #endif
+  strip1.begin();
 
   //Setup Wifi && Mqtt
+  WiFi.hostname("backlighter");
   WiFi.begin(WifiSsid, WifiPassword);
 #ifdef DEBUG
   Serial.println("");
@@ -56,10 +83,10 @@ void setup() {
   Serial.println();
   Serial.println(WiFi.localIP());
 #endif
-  mqttClient.setServer(MqttServer, 1883);
-  mqttClient.setCallback(callback);
-  while (!mqttClient.connected()) {
-    mqttClient.connect(MqttName);
+  mqttClient.begin("192.168.2.12", wifiClient);
+  mqttClient.onMessageAdvanced(callback);
+
+  while (!mqttClient.connect("backlighter")) {
     delay(1000); //1 second delay
 #ifdef DEBUG
     Serial.print(".");
@@ -77,10 +104,18 @@ void setup() {
 
 int numloop=0;
 
-// the loop function runs over and over again forever
+/*
+ * loop
+ */
 void loop() {
-  if (!mqttClient.connected()) {
+  while(!mqttClient.connected()) {
     mqttClient.connect(MqttName);
+    for(int i=0;i<Leds;i++) {
+      strip1.setPixelColor(i,0,0,0,0);
+    }
+    strip1.setPixelColor(0,50,0,0,0);
+    strip1.show();
+    delay(1);
   }
   mqttClient.loop();
 #ifdef DEBUG
@@ -93,6 +128,9 @@ void loop() {
 #endif
 }
 
+/*
+ * theaterChase
+ */
 void theaterChase(uint32_t c, uint8_t wait) {
     for (int j=0; j<10; j++) {  //do 10 cycles of chasing
         for (int q=0; q < 3; q++) {
@@ -109,32 +147,3 @@ void theaterChase(uint32_t c, uint8_t wait) {
         }
     }
 }
-
-//Mqtt On-Message-Receive called function
-void callback(char* topic, byte * payload, unsigned int length) {
-#ifdef DEBUG
-  Serial.print("Mqtt message incoming: ");
-  Serial.print(topic);
-  Serial.print(" - ");
-  Serial.print(length);
-  Serial.print(" - ");
-  Serial.print((char*) payload);
-  Serial.println();
-#endif
-  if(strcmp(topic,"desk/backlight/colour") == 0) {
-    Serial.println("got correct topic");
-    for(int clr=0,led = 0; clr < length;led++) {
-      strip1.setPixelColor(led,payload[clr],payload[clr+1],payload[clr+2],payload[clr+3]);
-      clr += 4;
-#ifdef DEBUG
-      Serial.print("setting led: ");
-      Serial.println(led);
-#endif
-    }
-    strip1.show();
-  }
-}
-
-
-
-

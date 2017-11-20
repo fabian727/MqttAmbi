@@ -12,12 +12,12 @@
 
 using namespace std;
 
-class terminal : public QThread
+class Terminal : public QThread
 {
     Q_OBJECT
 public:
-    explicit terminal();
-    ~terminal();
+    explicit Terminal();
+    ~Terminal();
 private:
     void send(const char *data);
     void receive(char *data);

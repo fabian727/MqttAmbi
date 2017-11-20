@@ -60,7 +60,7 @@ void MainWindow::setup_tray(MainWindow *window) {
     size->setHeight(50);
     size->setWidth(50);
     QIcon icon;
-    icon.addFile("./rgb.ico", *size);
+    icon.addFile("../master/icon/monochrome.svg", *size);
     trayicon->setIcon(icon);
 
     /*tray menu*/
@@ -83,12 +83,17 @@ void MainWindow::setup_tray(MainWindow *window) {
     trayActionQuit = new QAction(traymenu);
     trayActionQuit->setText("Quit RGB");
 
+    traySettings = new QAction(traymenu);
+    traySettings->setText("Settings");
+
     traymenu->addSeparator();
     traymenu->addAction(trayActionAmbiOne);
     traymenu->addAction(trayActionOpenOne);
     traymenu->addSeparator();
     traymenu->addAction(trayActionAmbiTwo);
     traymenu->addAction(trayActionOpenTwo);
+    traymenu->addSeparator();
+    traymenu->addAction(traySettings);
     traymenu->addAction(trayActionQuit);
 
     trayicon->setContextMenu(traymenu);
@@ -97,6 +102,7 @@ void MainWindow::setup_tray(MainWindow *window) {
     /* tray connections */
     connect(trayActionOpenOne,SIGNAL(triggered()),window,SLOT(sOpenOne()),Qt::DirectConnection);                              //open color window for light 1
     connect(trayActionOpenTwo,SIGNAL(triggered()),window,SLOT(sOpenTwo()),Qt::DirectConnection);                              //open color window for light 2
+//    connect(trayActionOpenTwo,SIGNAL(triggered()),window,SLOT(sOpenTwo()),Qt::DirectConnection);                              //open settings window
 }
 
 /*

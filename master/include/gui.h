@@ -47,6 +47,8 @@ private:
     QAction *trayActionOpenOne;
     QAction *trayActionOpenTwo;
 
+    QAction *traySettings;
+
     QSystemTrayIcon *trayicon;
     QMenu *traymenu;
 
