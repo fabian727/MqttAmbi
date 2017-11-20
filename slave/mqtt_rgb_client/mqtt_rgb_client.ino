@@ -2,6 +2,8 @@
 #include <MQTTClient.h>
 #include <ESP8266WiFi.h>
 
+#include "config.h"
+
 //for serial feedback
 #undef DEBUG
   
@@ -10,12 +12,22 @@
 #define PinOne 2
 
 //Wifi & MQTT
-#define WifiSsid "Home WLAN"
-#define WifiPassword "Nrg3CKBu7XNEXSCc"
+#ifndef WifiSsid
+#define WifiSsid "WLAN_SSID"
+#endif
+#ifndef WifiPassword
+#define WifiPassword "WLAN_PWD"
+#endif
 
-#define MqttServer "192.168.2.12"
+#ifndef MqttBroker
+#define MqttBroker "Bro.ker.ipa.ddr"
+#endif
+#ifndef MqttPort
 #define MqttPort 1883
+#endif
+#ifndef MqttName
 #define MqttName "backlighter"
+#endif
 
 /*
  * Global Variables
