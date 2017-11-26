@@ -32,8 +32,7 @@ public:
 
     void setup_win (MainWindow *window);
     void setup_tray (MainWindow *window);
-    QAction *trayActionAmbiOne;
-    QAction *trayActionAmbiTwo;
+    QAction *trayActionAmbi;
     QAction *trayActionQuit;
     QAction *windowActionQuit;
 
@@ -43,10 +42,7 @@ private:
 
     QAction *windowActionClose;
     QAction *windowActionColor;
-
-    QAction *trayActionOpenOne;
-    QAction *trayActionOpenTwo;
-
+    QAction *trayActionOpen;
     QAction *traySettings;
 
     QSystemTrayIcon *trayicon;
@@ -55,15 +51,13 @@ private:
 //protected:
 
 signals:
-    void setAmbiOne(bool checked);
-    void setAmbiTwo(bool checked);
-    void colorChanged(int id, QColor colour);
+    void setAmbi(int checked);
+    void colorChanged(QColor colour);
 
 public slots:
 
 private slots:
-    void sOpenOne(void);                  //open window
-    void sOpenTwo(void);                 //open window
+    void sOpen(void);                  //open window
     void sText(QColor color);           //update textbox in window with current color
     void sColor(void);                 //update colorwheel with color from textbox
 };

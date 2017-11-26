@@ -37,8 +37,7 @@ private:
 
 public slots:
     void setColour(int id, QColor colour);
-    void setAmbiOne(bool checked);
-    void setAmbiTwo(bool checked);
+    void setAmbi(bool checked);
 };
 
 #endif // TERMINAL_H

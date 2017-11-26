@@ -179,12 +179,9 @@ QColor Terminal::ambi(void) {
     colour.setBlue(blue);
     return colour;
 }
-void Terminal::setAmbiOne(bool checked) {
+
+void Terminal::setAmbi(bool checked) {
     AmbiOne = checked;
     string data = "1:255,0,0!\n\r";
     send(&data[0]);
-}
-
-void Terminal::setAmbiTwo(bool checked) {
-    AmbiTwo = checked;
 }

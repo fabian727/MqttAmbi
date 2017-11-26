@@ -12,10 +12,11 @@
 
 using namespace std;
 
-class MqttClient : public mosqpp::mosquittopp, public QThread
+class MqttClient : public QThread, public mosqpp::mosquittopp
 {
+    Q_OBJECT
 public:
-    MqttClient(const char *id, const char *host, const char *maintopic, int port);
+    explicit MqttClient(const char *id, const char *host, const char *maintopic, int port);
 	~MqttClient();
 
     string MainTopic;
@@ -27,7 +28,17 @@ public:
 private:
     void run();
     void *msg_buffer;
-    ws2812b *stripe;
+//    ws2812b *stripe;
+    bool ambi;
+
+    void CalcAverageColor(QColor *led, XImage *image, int xOffset, int yOffset, int width, int height);
+    int colors;
+    int leds;
+
+
+public slots:
+    void setColour(QColor avgcolour);
+    void setAmbi(bool checked);
 };
 
 #endif // _MQTTCLIENT_H_

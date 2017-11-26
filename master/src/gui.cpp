@@ -66,19 +66,13 @@ void MainWindow::setup_tray(MainWindow *window) {
     /*tray menu*/
     traymenu = new QMenu(window);
 
-    trayActionAmbiOne = new QAction(traymenu);
-    trayActionAmbiOne->setText("Ambi Light");
-    trayActionAmbiOne->setCheckable(true);
+    trayActionAmbi = new QAction(traymenu);
+    trayActionAmbi->setText("Ambi Light");
+    trayActionAmbi->setCheckable(true);
 
-    trayActionOpenOne = new QAction(traymenu);
-    trayActionOpenOne->setText("change Color");
+    trayActionOpen = new QAction(traymenu);
+    trayActionOpen->setText("change Color");
 
-    trayActionAmbiTwo = new QAction(traymenu);
-    trayActionAmbiTwo->setText("Ambi Light");
-    trayActionAmbiTwo->setCheckable(true);
-
-    trayActionOpenTwo = new QAction(traymenu);
-    trayActionOpenTwo->setText("change Color");
 
     trayActionQuit = new QAction(traymenu);
     trayActionQuit->setText("Quit RGB");
@@ -87,12 +81,9 @@ void MainWindow::setup_tray(MainWindow *window) {
     traySettings->setText("Settings");
 
     traymenu->addSeparator();
-    traymenu->addAction(trayActionAmbiOne);
-    traymenu->addAction(trayActionOpenOne);
-    traymenu->addSeparator();
-    traymenu->addAction(trayActionAmbiTwo);
-    traymenu->addAction(trayActionOpenTwo);
-    traymenu->addSeparator();
+    traymenu->addAction(trayActionAmbi);
+    traymenu->addAction(trayActionOpen);
+//    traymenu->addSeparator();
     traymenu->addAction(traySettings);
     traymenu->addAction(trayActionQuit);
 
@@ -100,9 +91,8 @@ void MainWindow::setup_tray(MainWindow *window) {
     trayicon->show();
 
     /* tray connections */
-    connect(trayActionOpenOne,SIGNAL(triggered()),window,SLOT(sOpenOne()),Qt::DirectConnection);                              //open color window for light 1
-    connect(trayActionOpenTwo,SIGNAL(triggered()),window,SLOT(sOpenTwo()),Qt::DirectConnection);                              //open color window for light 2
-//    connect(trayActionOpenTwo,SIGNAL(triggered()),window,SLOT(sOpenTwo()),Qt::DirectConnection);                              //open settings window
+    connect(trayActionOpen,SIGNAL(triggered()),window,SLOT(sOpen()),Qt::DirectConnection);                              //open color window for light
+//    connect(traySettings,SIGNAL(triggered()),window,SLOT(sSettings()),Qt::DirectConnection);                              //open color window for settings
 }
 
 /*
@@ -110,21 +100,13 @@ void MainWindow::setup_tray(MainWindow *window) {
  * Slots
  *
  */
-void MainWindow::sOpenOne() {
+void MainWindow::sOpen() {
     QColor color = windowColorWheel->color();
     sText(color);
-    trayActionAmbiOne->setChecked(false);
-    windowLine->setObjectName(QString::number(1));
+    trayActionAmbi->setChecked(false);
     this->show();
 }
 
-void MainWindow::sOpenTwo() {
-    QColor color = windowColorWheel->color();
-    sText(color);
-    trayActionAmbiTwo->setChecked(false);
-    windowLine->setObjectName(QString::number(2));
-    this->show();
-}
 
 void MainWindow::sText(QColor color) {
     QString colour = "#";
@@ -139,7 +121,7 @@ void MainWindow::sText(QColor color) {
     { buffer.append('0'); }
     colour.append(buffer);
     windowLine->setText(colour);
-    emit colorChanged(windowLine->objectName().toInt(),color);
+    emit colorChanged(color);
 }
 
 void MainWindow::sColor() {
@@ -149,5 +131,5 @@ void MainWindow::sColor() {
     colour.setGreen(color.mid(3,2).toInt(NULL,16));
     colour.setBlue(color.mid(5.2).toInt(NULL,16));
     windowColorWheel->setColor(colour);
-    emit colorChanged(windowLine->objectName().toInt(),colour);
+    emit colorChanged(colour);
 }
