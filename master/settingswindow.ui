@@ -1,9 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author/>
- <comment/>
- <exportmacro/>
  <class>SettingsWindow</class>
- <widget name="SettingsWindow" class="QDialog">
+ <widget class="QDialog" name="SettingsWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,7 +13,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget name="buttonBox" class="QDialogButtonBox">
+  <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
      <x>290</x>
@@ -31,8 +29,94 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>9</y>
+     <width>231</width>
+     <height>281</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="3" column="1">
+     <widget class="QSpinBox" name="leds"/>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_broker">
+      <property name="text">
+       <string>Broker Name</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="topic"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_stripes">
+      <property name="text">
+       <string>Stripes</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_topic">
+      <property name="text">
+       <string>Main Topic</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QComboBox" name="scheme">
+      <item>
+       <property name="text">
+        <string>GRBW</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_scheme">
+      <property name="text">
+       <string>Coloring Scheme</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_leds">
+      <property name="text">
+       <string>LEDs/Stripe</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QSpinBox" name="stripes"/>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="broker"/>
+    </item>
+   </layout>
+   <zorder>label_stripes</zorder>
+   <zorder>label_scheme</zorder>
+   <zorder>label_leds</zorder>
+   <zorder>label_broker</zorder>
+   <zorder>label_topic</zorder>
+   <zorder>scheme</zorder>
+   <zorder>leds</zorder>
+   <zorder>stripes</zorder>
+   <zorder>topic</zorder>
+   <zorder>broker</zorder>
+  </widget>
+  <zorder>gridLayoutWidget</zorder>
+  <zorder>buttonBox</zorder>
  </widget>
- <pixmapfunction/>
+ <tabstops>
+  <tabstop>broker</tabstop>
+  <tabstop>topic</tabstop>
+  <tabstop>stripes</tabstop>
+  <tabstop>leds</tabstop>
+  <tabstop>scheme</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

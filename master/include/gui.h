@@ -16,10 +16,12 @@
 #include <QWidget>
 #include <QSignalMapper>
 
+#include <QWidgetAction>
+#include <QSlider>
+
 #include <string>
 #include <iostream>
 #include <fstream>
-
 
 using namespace color_widgets;
 
@@ -35,6 +37,7 @@ public:
     QAction *trayActionAmbi;
     QAction *trayActionQuit;
     QAction *windowActionQuit;
+    QAction *traySettings;
 
 private:
     ColorWheel  *windowColorWheel;
@@ -43,7 +46,9 @@ private:
     QAction *windowActionClose;
     QAction *windowActionColor;
     QAction *trayActionOpen;
-    QAction *traySettings;
+
+    QWidgetAction *trayActionSlider;
+    QSlider *traySlider;
 
     QSystemTrayIcon *trayicon;
     QMenu *traymenu;
@@ -55,6 +60,8 @@ signals:
     void colorChanged(QColor colour);
 
 public slots:
+
+    void getAmbi(bool checked);
 
 private slots:
     void sOpen(void);                  //open window

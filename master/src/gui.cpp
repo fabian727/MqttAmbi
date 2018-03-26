@@ -53,15 +53,13 @@ void MainWindow::setup_win(MainWindow *window) {
 
 void MainWindow::setup_tray(MainWindow *window) {
 
-    /*tray icon*/
-    trayicon = new QSystemTrayIcon(window);
-
     QSize *size = new QSize();
     size->setHeight(50);
     size->setWidth(50);
     QIcon icon;
-    icon.addFile("../master/icon/monochrome.svg", *size);
-    trayicon->setIcon(icon);
+    QString AppPath = QCoreApplication::applicationDirPath();
+    AppPath.append("/../master/icon/monochrome.svg");
+    icon.addFile(AppPath, *size);
 
     /*tray menu*/
     traymenu = new QMenu(window);
@@ -74,6 +72,16 @@ void MainWindow::setup_tray(MainWindow *window) {
     trayActionOpen->setText("change Color");
 
 
+    trayActionSlider = new QWidgetAction (traymenu);
+    traySlider = new QSlider (Qt::Horizontal,traymenu);
+    traySlider->setRange(0,255);
+    traySlider->setValue(125);
+    traySlider->setSingleStep(5);
+    traySlider->setPageStep(50);
+    traySlider->show();
+    trayActionSlider->setDefaultWidget(traySlider);
+
+
     trayActionQuit = new QAction(traymenu);
     trayActionQuit->setText("Quit RGB");
 
@@ -82,11 +90,15 @@ void MainWindow::setup_tray(MainWindow *window) {
 
     traymenu->addSeparator();
     traymenu->addAction(trayActionAmbi);
+    traymenu->addAction(trayActionSlider);
     traymenu->addAction(trayActionOpen);
 //    traymenu->addSeparator();
     traymenu->addAction(traySettings);
     traymenu->addAction(trayActionQuit);
 
+    /*tray icon*/
+    trayicon = new QSystemTrayIcon(window);
+    trayicon->setIcon(icon);
     trayicon->setContextMenu(traymenu);
     trayicon->show();
 
@@ -132,4 +144,8 @@ void MainWindow::sColor() {
     colour.setBlue(color.mid(5.2).toInt(NULL,16));
     windowColorWheel->setColor(colour);
     emit colorChanged(colour);
+}
+
+void MainWindow::getAmbi(bool checked) {
+    trayActionAmbi->setChecked(checked);
 }
