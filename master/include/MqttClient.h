@@ -2,13 +2,14 @@
 #define _MQTTCLIENT_H_
 
 #include <QThread> //QT needs to be first
-
+#include <QTimer>
 #include <mosquitto.h> //c-header
 #include <mosquittopp.h> //cpp-header equivalent
 #include <iomanip> //uint8_t
 #include <string> //string
 
-#include "ws2812b.h"
+#include "QColor"
+#include <X11/Xlib.h>
 
 using namespace std;
 
@@ -27,11 +28,12 @@ public:
     void createStringStream(int NumLeds,int NumColors,char *mqttStream, QColor *averageColor);
     void maxBrightness();
 private:
-    void run();
     bool running;
     void CalcAverageColor(uint8_t *buffer, XImage *image, int xOffset, int yOffset, int width, int height);
     int colors;
+    void ambi();
     uint8_t leds;
+    QTimer timer;
 
 public slots:
     void getColour(QColor avgcolour);
@@ -39,6 +41,9 @@ public slots:
     void getNumLeds(int leds);
     void getTopic(std::string maintopic);
     void getStop();
+
+private slots:
+    void TimerHandlerFunction();
 };
 
 /*

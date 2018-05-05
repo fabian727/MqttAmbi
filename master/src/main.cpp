@@ -20,7 +20,6 @@
 #include "settings.h"
 #include "draw_grid.h"
 #include "MqttClient.h"
-#include "ws2812b.h"
 
 
 using namespace color_widgets;

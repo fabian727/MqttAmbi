@@ -78,9 +78,11 @@ void MainWindow::setup_tray(MainWindow *window) {
     traySlider->setValue(125);
     traySlider->setSingleStep(5);
     traySlider->setPageStep(50);
+    traySlider->setVisible(true);
+    traySlider->setEnabled(true);
     traySlider->show();
-    trayActionSlider->setDefaultWidget(traySlider);
 
+    trayActionSlider->setDefaultWidget(traySlider);
 
     trayActionQuit = new QAction(traymenu);
     trayActionQuit->setText("Quit RGB");
@@ -98,13 +100,27 @@ void MainWindow::setup_tray(MainWindow *window) {
 
     /*tray icon*/
     trayicon = new QSystemTrayIcon(window);
+
+    connect(trayicon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconClicked(QSystemTrayIcon::ActivationReason)));
+
+    printf("trayicon connected\n");
+    std::cout << std::flush;
+
+
     trayicon->setIcon(icon);
     trayicon->setContextMenu(traymenu);
     trayicon->show();
 
     /* tray connections */
+
     connect(trayActionOpen,SIGNAL(triggered()),window,SLOT(sOpen()),Qt::DirectConnection);                              //open color window for light
 //    connect(traySettings,SIGNAL(triggered()),window,SLOT(sSettings()),Qt::DirectConnection);                              //open color window for settings
+}
+
+void MainWindow::trayIconClicked(QSystemTrayIcon::ActivationReason reason) {
+    printf("reason: %d\n",reason);
+    std::cout << std::flush;
+    traySlider->show();
 }
 
 /*

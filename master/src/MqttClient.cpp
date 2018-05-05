@@ -8,7 +8,6 @@
 #include <sys/types.h>
 
 #include "config.h"
-#include "ws2812b.h"
 
 #ifdef LinuxX11
 #include <X11/Xlib.h>
@@ -35,11 +34,17 @@ int handleX11Error(Display *display, XErrorEvent *error) {
 
 /* ToDo: SetUp last Will, all LEDS go black */
 
-MqttClient::MqttClient(const char *id, const char *host, const char *topic, int port) : mosquittopp(id), QThread() {
+MqttClient::MqttClient(const char *id, const char *host, const char *topic, int port) : QThread(), mosquittopp(id) {
     mosqpp::lib_init();			// Initialize libmosquitto
 
-    /* setup ws2812b */
-//    this->stripe = new ws2812b(32,4);
+    //int timer for ambi light
+    //this timer will call function "ambi", which calculates the color of the background
+    timer.setTimerType(Qt::PreciseTimer);       //be ms accurate
+    timer.setInterval(50);                      //every 50 ms = 20 Hertz
+    timer.setSingleShot(true);
+    QObject::connect(&this->timer, SIGNAL(timeout()), this, SLOT(TimerHandlerFunction()));
+    timer.stop();
+
     leds=MQTT_LEDS;
     colors=MQTT_COLORS;
 
@@ -55,13 +60,11 @@ MqttClient::MqttClient(const char *id, const char *host, const char *topic, int 
     this->will_set(&clrtopic[0],leds*colors+1,msg_buffer);
 }
 
-MqttClient::~MqttClient() {
-    this->mosquittopp::disconnect();
-}
-
-void MqttClient::run() {
+void MqttClient::ambi() {
+    int num_led = leds;
+    timer.start();
     //first byte for configuration. rest for LED colours
-    uint8_t mqttStream[colors*leds+1] = {};
+    uint8_t mqttStream[colors*num_led+1] = {};
     /* binary transfer, every byte/char equals 1 hex number/color */
     mqttStream[0] = BYTE_RGB;        //just transfer red,green,blue
     /* setup x11 */
@@ -71,19 +74,27 @@ void MqttClient::run() {
     XSetErrorHandler(&handleX11Error);
 
     string clrtopic = MQTT_TOPIC_COLOUR;
-    while(running) {
-        image = XGetImage(display,RootWindow (display, DefaultScreen (display)), 0,0 , screen->width,screen->height,AllPlanes, ZPixmap);
-        this->CalcAverageColor(&mqttStream[1],image,screen->width,20,screen->width,screen->height-20);
-        this->publish(NULL,&clrtopic[0],((leds*3)+1),&mqttStream[0]);
-        XDestroyImage(image);
-        if(this->loop()) {
-            this->reconnect();
-        }
+
+    image = XGetImage(display,RootWindow (display, DefaultScreen (display)), 0,0 , screen->width,screen->height,AllPlanes, ZPixmap);
+    this->CalcAverageColor(&mqttStream[1],image,screen->width,20,screen->width,screen->height-20);
+    this->publish(NULL,&clrtopic[0],((num_led*3)+1),&mqttStream[0]);
+    if(this->loop()) {
+        this->reconnect();
     }
+    XCloseDisplay(display);
+    XDestroyImage(image);
+}
+
+void MqttClient::TimerHandlerFunction() {
+    ambi();
+}
+
+MqttClient::~MqttClient() {
+    this->mosquittopp::disconnect();
 }
 
 void MqttClient::getStop() {
-    running = false;
+    timer.stop();
     wait(30000);
 }
 
@@ -123,7 +134,9 @@ void MqttClient::CalcAverageColor(uint8_t *buffer, XImage *image, int xOffset, i
 void MqttClient::getAmbi(bool checked) {
     running = checked;
     if(checked) {
-        this->start();
+        timer.start();
+    } else {
+        timer.stop();
     }
 }
 
@@ -134,11 +147,15 @@ void MqttClient::getNumLeds(int leds) {
     string subtopic = MQTT_TOPIC_NUMLEDS;
     int maxleds = 254;
     this->publish(NULL,&subtopic[0],1,&maxleds);
+
     this->getColour(QColor (0,0,0));
     this->leds = leds;
     this->publish(NULL,&subtopic[0],1,&leds);
     this->getColour(QColor (100,100,100));
     running = hasrun;
+    if(running) {
+        timer.start();
+    }
 }
 
 void MqttClient::getTopic(std::string maintopic) {
@@ -146,6 +163,7 @@ void MqttClient::getTopic(std::string maintopic) {
 }
 
 void MqttClient::getColour(QColor avgcolour) {
+    timer.stop();
     uint8_t mqttStream[5];
     string clrtopic = MQTT_TOPIC_COLOUR;
     mqttStream[0] = RGBW_INT;

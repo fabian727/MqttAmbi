@@ -50,8 +50,8 @@ private:
     QWidgetAction *trayActionSlider;
     QSlider *traySlider;
 
-    QSystemTrayIcon *trayicon;
     QMenu *traymenu;
+    QSystemTrayIcon *trayicon;
 
 //protected:
 
@@ -62,6 +62,7 @@ signals:
 public slots:
 
     void getAmbi(bool checked);
+    void trayIconClicked(QSystemTrayIcon::ActivationReason reason);
 
 private slots:
     void sOpen(void);                  //open window

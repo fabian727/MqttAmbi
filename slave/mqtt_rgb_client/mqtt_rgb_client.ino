@@ -105,6 +105,8 @@ void interprete_message(char payload[], int length) {
         strip1.setPixelColor(i, r, g, b, 0);
         strip2.setPixelColor(i, r, g, b, 0);
       }
+      strip1.show();
+      strip2.show();
       break;
     //setting r,g,b,w, same principle as case '1', but for uint8_t
     case '2':
@@ -125,40 +127,43 @@ void interprete_message(char payload[], int length) {
         strip1.setPixelColor(i, b, g, r, w);
         strip2.setPixelColor(i, b, g, r, w);
       }
+      strip1.show();
+      strip2.show();
       break;
+    case '4':
+      w = payload[4];
     case '3':
       r = payload[1];
       g = payload[2];
       b = payload[3];
       for (int i = 0; i < Leds; i++) {
-        strip1.setPixelColor(i, r, g, b, 0);
-        strip2.setPixelColor(i, r, g, b, 0);
-      }
-      break;
-    case '4':
-      r = payload[1];
-      g = payload[2];
-      b = payload[3];
-      w = payload[4];
-      for (int i = 0; i < Leds; i++) {
         strip1.setPixelColor(i, r, g, b, w);
         strip2.setPixelColor(i, r, g, b, w);
       }
+      strip1.show();
+      strip2.show();
       break;
     case '0':
-//      strip1.setBuffer((uint8_t*) &payload[1], 0, length-1);
-      strip2.setBuffer((uint8_t*) &payload[1], 0, length-1);
+      uint8_t* tmp_ptr;
+      tmp_ptr = strip2.getBufferPtr();
+      strip2.setBufferPtr((uint8_t *) &payload[1]);
+      strip2.show();
+      strip2.setBufferPtr(tmp_ptr);
       break;
     case '9':
-//      strip1.setRGBBuffer((uint8_t*) &payload[1], 0, length-1);
+/*
+        uint8_t* tmp_ptr;
+      tmp_ptr = strip2.getBufferPtr();
+      strip2.setBufferPtr((uint8_t *) &payload[1]);
+      strip2.show();
+      strip2.setBufferPtr(tmp_ptr);
+*/
       strip2.setRGBBuffer((uint8_t*) &payload[1], 0, length-1);
+      strip2.show() ;
       break;
     default:
       break;
   }
-
-  strip1.show() ;
-  strip2.show() ;
 }
 
 /*

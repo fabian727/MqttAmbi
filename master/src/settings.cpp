@@ -43,6 +43,8 @@ Settings::Settings(QWidget *parent) :
     if(number != -1) {
         ui->scheme->setCurrentIndex(number);
     }
+    this->setNumLeds(leds);
+    this->setTopic(topic.toStdString());
 }
 
 Settings::~Settings()
