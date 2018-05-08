@@ -1,6 +1,6 @@
-#include "gui.h"
-#include "terminal.h"
-#include "config.h"
+#include "inc/gui.h"
+#include "inc/terminal.h"
+#include "inc/config.h"
 
 #include <QApplication>
 #include <QMainWindow>
@@ -17,9 +17,9 @@
 #include <sys/types.h>
 #include <vector>
 
-#include "settings.h"
-#include "draw_grid.h"
-#include "MqttClient.h"
+#include "../inc/settings.h"
+#include "../inc/draw_grid.h"
+#include "../inc/MqttClient.h"
 
 
 using namespace color_widgets;

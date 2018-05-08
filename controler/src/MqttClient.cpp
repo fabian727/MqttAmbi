@@ -1,13 +1,13 @@
 #include <QColor>
 
-#include "MqttClient.h"
+#include "../inc/MqttClient.h"
 #include <string.h>
 #include <vector>
 #include <sstream>
 
 #include <sys/types.h>
 
-#include "config.h"
+#include "../inc/config.h"
 
 #ifdef LinuxX11
 #include <X11/Xlib.h>

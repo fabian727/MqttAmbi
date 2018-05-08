@@ -5,7 +5,7 @@
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QMenu>
-#include <color_wheel.hpp>
+#include "dep/Qt-Color-Widgets/include/QtColorWidgets/color_wheel.hpp"
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>

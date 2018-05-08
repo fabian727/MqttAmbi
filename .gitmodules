@@ -1,0 +1,9 @@
+[submodule "master/deps/Qt-Color-Widgets"]
+	path = master/deps/Qt-Color-Widgets
+	url = https://github.com/mbasaglia/Qt-Color-Widgets.git
+[submodule "dep/mosquitto"]
+	path = dep/mosquitto
+	url = https://github.com/eclipse/mosquitto.git
+[submodule "controler/dep/mosquitto"]
+	path = controler/dep/mosquitto
+	url = https://github.com/eclipse/mosquitto.git

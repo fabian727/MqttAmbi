@@ -1,4 +1,4 @@
-#include "gui.h"
+#include "../inc/gui.h"
 
 #include <QWidgetAction>
 #include <QSlider>

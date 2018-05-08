@@ -1,4 +1,4 @@
-#include "terminal.h"
+#include "../inc/terminal.h"
 
 #include <unistd.h>     // UNIX standard function definitions
 #include <fcntl.h>      // File control definitions
