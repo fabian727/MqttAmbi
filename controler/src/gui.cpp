@@ -58,7 +58,7 @@ void MainWindow::setup_tray(MainWindow *window) {
     size->setWidth(50);
     QIcon icon;
     QString AppPath = QCoreApplication::applicationDirPath();
-    AppPath.append("/../master/icon/monochrome.svg");
+    AppPath.append("/../controler/ico/monochrome.svg");
     icon.addFile(AppPath, *size);
 
     /*tray menu*/
