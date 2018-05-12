@@ -1,6 +1,15 @@
 +++ Adafruit_Neopixel.c
 --- Adafruit_Neopixel.c
-@@@ -2250,0 +2250,8 @@@
+@@@ -2250,0 +2250,17 @@@
++void Adafruit_NeoPixel::setRGBBuffer(uint8_t* data, uint8_t offset, uint8_t length) {
++	int i=offset;
++	while(i< (offset+length)) {
++		pixels[i++] = *data++;
++		pixels[i++] = *data++;
++		pixels[i++] = *data++;
++		i++;
++	}
++}
 +
 +void Adafruit_NeoPixel::setBufferPtr(uint8_t * ptr) {
 +	pixels = ptr;
