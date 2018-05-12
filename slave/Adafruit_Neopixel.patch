@@ -1,0 +1,28 @@
++++ Adafruit_Neopixel.c
+--- Adafruit_Neopixel.c
+@@@ -2250,0 +2250,8 @@@
++
++void Adafruit_NeoPixel::setBufferPtr(uint8_t * ptr) {
++	pixels = ptr;
++}
++
++uint8_t *Adafruit_NeoPixel::getBufferPtr(void) {
++	return pixels;
++}
+
++++ Adafruit_Neopixel.h
+--- Adafruit_Neopixel.h
+
+@@@ -129,0 +129,8 @@@
+    setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
+    setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w),
+    setPixelColor(uint16_t n, uint32_t c),
++    setBufferPtr(uint8_t * ptr),
++    setRGBBuffer(uint8_t* data, uint8_t offset, uint8_t length),
+    setBrightness(uint8_t),
+
+@@@ -138,0 +138,1 @@@
+  uint8_t
+   *getPixels(void) const,
++   *getBufferPtr(void),
+    getBrightness(void) const,
