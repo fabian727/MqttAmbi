@@ -8,7 +8,7 @@
 //define for measurement of needed time of loop
 #undef TIME
 
-//name or ip of the broker. IP should be formated as: AAA.BBB.CCC.DDD
+//name or ip of the broker. IPv4 should be formated as: AAA.BBB.CCC.DDD
 #define MQTT_BROKER "surfer.local"
 //default port is 1883, but there is other for encrypted
 #define MQTT_PORT 1883
@@ -19,7 +19,7 @@
 //the default number of LEDs of each stripe
 #define MQTT_LEDS 42
 //number of colors per LED
-#define MQTT_COLORS 3
+#define MQTT_COLORS 4
 //number of default stripes, which are spoken to
 #define MQTT_STRIPES 1
 #endif // CONFIG_H

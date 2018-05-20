@@ -41,18 +41,17 @@ public:
 
 private:
     ColorWheel  *windowColorWheel;
+    QSlider *windowWhiteSlider;
     QLineEdit *windowLine;
 
     QAction *windowActionClose;
     QAction *windowActionColor;
     QAction *trayActionOpen;
 
-    QWidgetAction *trayActionSlider;
-    QSlider *traySlider;
-
     QMenu *traymenu;
     QSystemTrayIcon *trayicon;
 
+    QColor activeColor;
 //protected:
 
 signals:
@@ -60,14 +59,13 @@ signals:
     void colorChanged(QColor colour);
 
 public slots:
-
     void getAmbi(bool checked);
-    void trayIconClicked(QSystemTrayIcon::ActivationReason reason);
 
 private slots:
     void sOpen(void);                  //open window
     void sText(QColor color);           //update textbox in window with current color
     void sColor(void);                 //update colorwheel with color from textbox
+    void sColor(int);                 //update colorwheel with color from textbox
 };
 
 #endif // MAINWINDOW_H

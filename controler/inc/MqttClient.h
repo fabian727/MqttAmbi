@@ -35,10 +35,16 @@ private:
     uint8_t leds;
     QTimer timer;
 
+    //handle X11 display/image handling
+    Display *display;
+    Screen  *screen;
+    XImage *image;
+
+
 public slots:
     void getColour(QColor avgcolour);
     void getAmbi(bool checked);
-    void getNumLeds(int leds);
+    void getNumLeds(uint8_t leds, bool save);
     void getTopic(std::string maintopic);
     void getStop();
 
@@ -53,11 +59,11 @@ private slots:
  * RGBWColor: a RGBW colored stripe is attached
  */
 
+#define BYTE_RGB  '9'       //set only RGB as new, keep the old white (as background light)
 #define BYTE_WISE '0'       //take array as is and copy paste it
-#define BYTE_RGB  '9'       //not complete as is, augment it with 0 for white
-#define RGB_CHAR  '1'
-#define RGBW_CHAR '2'
-#define RGB_INT   '3'
-#define RGBW_INT  '4'
+#define RGB_CHAR  '1'       //set all LEDs to rgb and white as 0; sent as Ascii
+#define RGBW_CHAR '2'       //set all LEDs to rgbw; sent as Ascii
+#define RGB_INT   '3'       //set all LEDs to rgb and white as 0; sent as hex
+#define RGBW_INT  '4'       //set all LEDs to this rgbw; sent as hex
 
 #endif // _MQTTCLIENT_H_

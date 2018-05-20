@@ -27,14 +27,16 @@ private:
 
 private slots:
     void on_buttonBox_accepted();
+    void on_ledsperstripe_valueChanged(int arg1);
+    void on_ledsperdisplay_valueChanged(int arg1);
+
     void on_buttonBox_rejected();
-    void on_leds_valueChanged(int leds);
 
 public slots:
     void saveAmbi(bool ambi);
 
 signals:
-    void setNumLeds(int leds);
+    void setNumLeds(uint8_t leds, bool save);
     void setTopic(std::string topic);
     void setAmbi(bool ambi);
 

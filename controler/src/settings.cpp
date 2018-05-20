@@ -12,7 +12,8 @@ Settings::Settings(QWidget *parent) :
             topic=MQTT_BASE_TOPIC,
             scheme="GRBW";
 
-    int leds=MQTT_LEDS,
+    uint ledsperdisplay=MQTT_LEDS,
+        ledsperstripe=MQTT_LEDS,
         stripes=MQTT_STRIPES;
 
     SettingsFile.setPath(QSettings::NativeFormat,QSettings::UserScope,"MqttAmbi");
@@ -26,24 +27,28 @@ Settings::Settings(QWidget *parent) :
     if(SettingsFile.contains("scheme")) {
         scheme = SettingsFile.value("scheme").toString();
     }
-    if(SettingsFile.contains("leds")) {
-        leds = SettingsFile.value("leds").toInt();
+    if(SettingsFile.contains("ledsperdisplay")) {
+        ledsperdisplay = SettingsFile.value("ledsperdisplay").toUInt();
     }
     if(SettingsFile.contains("stripes")) {
-        stripes = SettingsFile.value("stripes").toInt();
+        stripes = SettingsFile.value("stripes").toUInt();
+    }
+    if(SettingsFile.contains("ledsperstripe")) {
+        ledsperstripe = SettingsFile.value("ledsperstripe").toUInt();
     }
 
     //set values, which were configured, else default
     ui->setupUi(this);
     ui->broker->setText(broker);
     ui->topic->setText(topic);
-    ui->leds->setValue(leds);
+    ui->ledsperdisplay->setValue(ledsperdisplay);
     ui->stripes->setValue(stripes);
+    ui->ledsperstripe->setValue(ledsperstripe);
     int number = ui->scheme->findText(scheme);
     if(number != -1) {
         ui->scheme->setCurrentIndex(number);
     }
-    this->setNumLeds(leds);
+    this->setNumLeds(ledsperstripe,true);
     this->setTopic(topic.toStdString());
 }
 
@@ -57,9 +62,13 @@ void Settings::on_buttonBox_accepted()
     SettingsFile.setValue("broker",ui->broker->text());
     SettingsFile.setValue("topic",ui->topic->text());
     SettingsFile.setValue("scheme",ui->scheme->currentText());
-    SettingsFile.setValue("leds",ui->leds->value());
+    SettingsFile.setValue("ledsperstripe",ui->ledsperstripe->value());
+    SettingsFile.setValue("ledsperdisplay",ui->ledsperdisplay->value());
     SettingsFile.setValue("stripes",ui->stripes->value());
-    this->setNumLeds(ui->leds->value());
+
+    //watch the correct call order. First call for internal save. Second call for save on the strip (send per mqtt)
+    this->setNumLeds(ui->ledsperdisplay->value(),true);
+    this->setNumLeds(ui->ledsperstripe->value(),false);
     this->setTopic(ui->topic->text().toStdString());
 }
 
@@ -75,12 +84,24 @@ void Settings::saveAmbi(bool ambi) {
     SettingsFile.setValue("ambi",ambi);
 }
 
-void Settings::on_buttonBox_rejected()
+void Settings::on_ledsperstripe_valueChanged(int leds)
 {
-
+    saveAmbi(false);
+    this->setAmbi(false);
+    this->setNumLeds((uint8_t) leds,false);
 }
 
-void Settings::on_leds_valueChanged(int leds)
+void Settings::on_ledsperdisplay_valueChanged(int leds)
 {
-    this->setNumLeds(leds);
+    saveAmbi(false);
+    this->setAmbi(false);
+    this->setNumLeds((uint8_t) leds,true);
+}
+
+void Settings::on_buttonBox_rejected()
+{
+    //watch the correct call order. First call for internal save. Second call for save on the strip (send per mqtt)
+    this->setNumLeds((uint8_t) SettingsFile.value("ledsperdisplay").toUInt(),true);
+    this->setNumLeds((uint8_t) SettingsFile.value("ledsperstripe").toUInt(),false);
+
 }

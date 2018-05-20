@@ -23,10 +23,9 @@
 */
 //#include "moc_MqttClient.cpp"
 
-
 using namespace std;
 
-typedef int (*handler)(Display *, XErrorEvent *);
+//typedef int (*handler)(Display *, XErrorEvent *);
 int handleX11Error(Display *display, XErrorEvent *error) {
     printf("X11 Error: %i \n", error->error_code);
    return error->error_code;
@@ -48,8 +47,10 @@ MqttClient::MqttClient(const char *id, const char *host, const char *topic, int 
     leds=MQTT_LEDS;
     colors=MQTT_COLORS;
 
-    char *msg_buffer = (char *) malloc(leds*colors+1);
-    memset(msg_buffer,0,leds*colors+1);
+    //handle X11 display/image handling
+    display = XOpenDisplay(NULL);
+    screen  = DefaultScreenOfDisplay(display);
+    XSetErrorHandler(&handleX11Error);
 
     this->topic = topic;
     int keepalive = 120; // seconds
@@ -57,31 +58,33 @@ MqttClient::MqttClient(const char *id, const char *host, const char *topic, int 
 
 /*set last will*/
     string clrtopic = MQTT_TOPIC_COLOUR;
-    this->will_set(&clrtopic[0],leds*colors+1,msg_buffer);
+    uint8_t mqttStream[colors*leds+1] = {};
+    this->will_set(&clrtopic[0],leds*colors+1,&mqttStream[0]);
+}
+
+MqttClient::~MqttClient() {
+    XCloseDisplay(display);
+    this->mosquittopp::disconnect();
 }
 
 void MqttClient::ambi() {
-    int num_led = leds;
-    timer.start();
-    //first byte for configuration. rest for LED colours
-    uint8_t mqttStream[colors*num_led+1] = {};
+    if(running) {
+        timer.start();
+    }
+    //first byte for configuration. rest for LED colours, white is kept as backlight
+    uint8_t mqttStream[3*leds+1] = {};
     /* binary transfer, every byte/char equals 1 hex number/color */
-    mqttStream[0] = BYTE_RGB;        //just transfer red,green,blue
+    mqttStream[0] = BYTE_RGB;        //just transfer red,green,blue, keep old white as backlightning
     /* setup x11 */
-    Display *display = XOpenDisplay(NULL);
-    Screen  *screen  = DefaultScreenOfDisplay(display);
-    XImage *image;
-    XSetErrorHandler(&handleX11Error);
-
     string clrtopic = MQTT_TOPIC_COLOUR;
 
     image = XGetImage(display,RootWindow (display, DefaultScreen (display)), 0,0 , screen->width,screen->height,AllPlanes, ZPixmap);
-    this->CalcAverageColor(&mqttStream[1],image,screen->width,20,screen->width,screen->height-20);
-    this->publish(NULL,&clrtopic[0],((num_led*3)+1),&mqttStream[0]);
+    this->CalcAverageColor(&mqttStream[1],image,0,20,screen->width,screen->height-20);
+    //just set RGB colour and keep white as is (so only 3 byte/led)
+    this->publish(NULL,&clrtopic[0],leds*3+1,&mqttStream[0]);
     if(this->loop()) {
         this->reconnect();
     }
-    XCloseDisplay(display);
     XDestroyImage(image);
 }
 
@@ -89,19 +92,21 @@ void MqttClient::TimerHandlerFunction() {
     ambi();
 }
 
-MqttClient::~MqttClient() {
-    this->mosquittopp::disconnect();
-}
-
 void MqttClient::getStop() {
     timer.stop();
     wait(30000);
 }
 
+
+/*
+ * x/y Offset is taken from the given image
+ * width, height too. So you have to calculate the Offset of the left by yourself and tell this function
+ * at width and height, you need your offset of the right/bottom self calculated too
+ */
 void MqttClient::CalcAverageColor(uint8_t *buffer, XImage *image, int xOffset, int yOffset, int width, int height) {
-    int xStepWidth = (width)/(leds);
-    int number = (xStepWidth*(height-yOffset));
-    int offset = 0;
+    int xStepWidth = (width)/(leds);            //"window"-width of each pixel column
+    int number = (xStepWidth*(height-yOffset)); //number of pixels added
+    int offset = 0;                             //startoffset for each row
     uint tmp_red = 0,
          tmp_green = 0,
          tmp_blue = 0;
@@ -113,9 +118,9 @@ void MqttClient::CalcAverageColor(uint8_t *buffer, XImage *image, int xOffset, i
         tmp_blue = 0;
         for(int y = yOffset; y < height; y++) {
             //calculate y-offset + which row to go down (start of)
-            offset = y * image->bytes_per_line + ((xOffset+xStepWidth*num) << 2);
+            offset = y * image->bytes_per_line + ((xOffset+(xStepWidth*num)) << 2);
             //go until you got to end of row, then go to next line
-            while(offset < y * image->bytes_per_line + ((xOffset+xStepWidth*(num+1)) << 2)) {
+            while(offset < y * image->bytes_per_line + ((xOffset+(xStepWidth*(num+1))) << 2)) {
                 //each 32 bit is a color in the scheme of blue, green, red
                 tmp_blue  += (uint8_t & ) image->data[offset++];
                 tmp_green += (uint8_t & ) image->data[offset++];
@@ -130,7 +135,7 @@ void MqttClient::CalcAverageColor(uint8_t *buffer, XImage *image, int xOffset, i
     }
 }
 
-//this slot is called, if "Ambilight" is checked on the gui
+//this slot is called, on change of "Ambilight" on the gui
 void MqttClient::getAmbi(bool checked) {
     running = checked;
     if(checked) {
@@ -141,27 +146,32 @@ void MqttClient::getAmbi(bool checked) {
 }
 
 //if the number of LEDs is changed, show them directly
-void MqttClient::getNumLeds(int leds) {
-    bool hasrun = running;
+//slot
+void MqttClient::getNumLeds(uint8_t newleds, bool save) {
+    //save if ambilight was running and restart it at the end
     running = false;
-    string subtopic = MQTT_TOPIC_NUMLEDS;
-    int maxleds = 254;
-    this->publish(NULL,&subtopic[0],1,&maxleds);
+    string numledtopic = MQTT_TOPIC_NUMLEDS;
 
-    this->getColour(QColor (0,0,0));
-    this->leds = leds;
-    this->publish(NULL,&subtopic[0],1,&leds);
-    this->getColour(QColor (100,100,100));
-    running = hasrun;
-    if(running) {
-        timer.start();
+    //first set all leds to black
+    int maxleds = 254;
+    this->publish(NULL,&numledtopic[0],1,&maxleds);
+    this->getColour(QColor(0,0,0,0));
+
+    //light up the selected number
+    this->publish(NULL,&numledtopic[0],1,&newleds);
+    this->getColour(QColor(100,100,100,20));
+    //if its the number of leds for the display width, save it. Else pass it to the stripe as maximum buffer amount for the leds
+    if(save) {
+        this->leds = newleds;
     }
 }
 
+//slot
 void MqttClient::getTopic(std::string maintopic) {
     this->topic = maintopic;
 }
 
+//public slot
 void MqttClient::getColour(QColor avgcolour) {
     timer.stop();
     uint8_t mqttStream[5];
@@ -170,6 +180,6 @@ void MqttClient::getColour(QColor avgcolour) {
     mqttStream[1] = avgcolour.red();
     mqttStream[2] = avgcolour.green();
     mqttStream[3] = avgcolour.blue();
-    mqttStream[4] = (mqttStream[1]+mqttStream[2]+mqttStream[3])/3;
+    mqttStream[4] = avgcolour.alpha();
     this->publish(NULL,&clrtopic[0],5,&mqttStream[0]);
 }

@@ -60,7 +60,7 @@ ESP8266WebServer httpServer(80);
 static const char UpdatePage[] = "\
 <html>\
   <body>\
-  backlighter - v1.01 - Generic ESP8266-01 - Flash: 1 MB<br>\<br>\
+  backlighter - v1.03 - Generic ESP8266-01 - Flash: 1 MB<br>\<br>\
     <form method='POST' action='/update' enctype='multipart/form-data'>\
       <input type='file' name='update'>\
       <input type='submit' value='Update'>\
@@ -101,7 +101,7 @@ void interprete_message(char payload[], int length) {
         }
       }
       b = b / 10;
-      for (int i = 0; i < Leds; i++) {
+      for (int i = 0; i < strip1.numPixels(); i++) {
         strip1.setPixelColor(i, r, g, b, 0);
         strip2.setPixelColor(i, r, g, b, 0);
       }
@@ -123,7 +123,7 @@ void interprete_message(char payload[], int length) {
         }
       }
       w = w / 10;
-      for (int i = 0; i < Leds; i++) {
+      for (int i = 0; i < strip1.numPixels(); i++) {
         strip1.setPixelColor(i, b, g, r, w);
         strip2.setPixelColor(i, b, g, r, w);
       }
@@ -136,7 +136,7 @@ void interprete_message(char payload[], int length) {
       r = payload[1];
       g = payload[2];
       b = payload[3];
-      for (int i = 0; i < Leds; i++) {
+      for (int i = 0; i < strip1.numPixels(); i++) {
         strip1.setPixelColor(i, r, g, b, w);
         strip2.setPixelColor(i, r, g, b, w);
       }

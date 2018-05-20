@@ -24,10 +24,17 @@ void MainWindow::setup_win(MainWindow *window) {
     windowColorWheel = new ColorWheel(window);
     windowLine = new QLineEdit(window);
 
+    windowWhiteSlider = new QSlider(window);
+    windowWhiteSlider->setMinimum(0);
+    windowWhiteSlider->setMaximum(255);
+    windowWhiteSlider->setOrientation(Qt::Horizontal);
+
+
     windowLine->setMaximumWidth(100);
 
     windowLayout->setObjectName("centralLayout");
     windowLayout->addWidget(windowColorWheel);
+    windowLayout->addWidget(windowWhiteSlider);
     windowLayout->addWidget(windowLine);
 
     windowCentral->setLayout(windowLayout);
@@ -47,8 +54,10 @@ void MainWindow::setup_win(MainWindow *window) {
     /* window connections */
     connect(windowActionClose,SIGNAL(triggered()),window,SLOT(close()),Qt::DirectConnection);                    //close by Ctrl+W
     connect(windowColorWheel,SIGNAL(colorChanged(QColor)),window,SLOT(sText(QColor)),Qt::DirectConnection);      //if color wheel is changed, change text line
+    connect(windowWhiteSlider,SIGNAL(sliderMoved(int)),window,SLOT(sColor(int)),Qt::DirectConnection);
     connect(windowLine,SIGNAL(editingFinished()),window,SLOT(sColor()),Qt::DirectConnection);
     connect(windowLine,SIGNAL(returnPressed()),window,SLOT(sColor()),Qt::DirectConnection);
+
 }
 
 void MainWindow::setup_tray(MainWindow *window) {
@@ -71,19 +80,6 @@ void MainWindow::setup_tray(MainWindow *window) {
     trayActionOpen = new QAction(traymenu);
     trayActionOpen->setText("change Color");
 
-
-    trayActionSlider = new QWidgetAction (traymenu);
-    traySlider = new QSlider (Qt::Horizontal,traymenu);
-    traySlider->setRange(0,255);
-    traySlider->setValue(125);
-    traySlider->setSingleStep(5);
-    traySlider->setPageStep(50);
-    traySlider->setVisible(true);
-    traySlider->setEnabled(true);
-    traySlider->show();
-
-    trayActionSlider->setDefaultWidget(traySlider);
-
     trayActionQuit = new QAction(traymenu);
     trayActionQuit->setText("Quit RGB");
 
@@ -92,20 +88,12 @@ void MainWindow::setup_tray(MainWindow *window) {
 
     traymenu->addSeparator();
     traymenu->addAction(trayActionAmbi);
-    traymenu->addAction(trayActionSlider);
     traymenu->addAction(trayActionOpen);
-//    traymenu->addSeparator();
     traymenu->addAction(traySettings);
     traymenu->addAction(trayActionQuit);
 
     /*tray icon*/
     trayicon = new QSystemTrayIcon(window);
-
-    connect(trayicon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconClicked(QSystemTrayIcon::ActivationReason)));
-
-    printf("trayicon connected\n");
-    std::cout << std::flush;
-
 
     trayicon->setIcon(icon);
     trayicon->setContextMenu(traymenu);
@@ -115,12 +103,6 @@ void MainWindow::setup_tray(MainWindow *window) {
 
     connect(trayActionOpen,SIGNAL(triggered()),window,SLOT(sOpen()),Qt::DirectConnection);                              //open color window for light
 //    connect(traySettings,SIGNAL(triggered()),window,SLOT(sSettings()),Qt::DirectConnection);                              //open color window for settings
-}
-
-void MainWindow::trayIconClicked(QSystemTrayIcon::ActivationReason reason) {
-    printf("reason: %d\n",reason);
-    std::cout << std::flush;
-    traySlider->show();
 }
 
 /*
@@ -152,15 +134,25 @@ void MainWindow::sText(QColor color) {
     emit colorChanged(color);
 }
 
-void MainWindow::sColor() {
+void MainWindow::sColor(void) {
     QString color = windowLine->text();
-    QColor colour;
-    colour.setRed( color.mid(1,2).toInt(NULL,16));
-    colour.setGreen(color.mid(3,2).toInt(NULL,16));
-    colour.setBlue(color.mid(5.2).toInt(NULL,16));
-    windowColorWheel->setColor(colour);
-    emit colorChanged(colour);
+    activeColor.setRed( color.mid(1,2).toInt(NULL,16));
+    activeColor.setGreen(color.mid(3,2).toInt(NULL,16));
+    activeColor.setBlue(color.mid(5.2).toInt(NULL,16));
+    windowColorWheel->setColor(activeColor);
+    emit colorChanged(activeColor);
 }
+
+void MainWindow::sColor(int white) {
+    QString color = windowLine->text();
+    activeColor.setRed( color.mid(1,2).toInt(NULL,16));
+    activeColor.setGreen(color.mid(3,2).toInt(NULL,16));
+    activeColor.setBlue(color.mid(5.2).toInt(NULL,16));
+    activeColor.setAlpha(white);
+    windowColorWheel->setColor(activeColor);
+    emit colorChanged(activeColor);
+}
+
 
 void MainWindow::getAmbi(bool checked) {
     trayActionAmbi->setChecked(checked);

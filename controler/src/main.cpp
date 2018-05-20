@@ -36,14 +36,15 @@ int main(int argc, char *argv[])
     MainWindow window;
 
     //SettingsWindow
-    Settings swindow;
     MqttClient mqtt(MQTT_NAME,MQTT_BROKER,MQTT_BASE_TOPIC,MQTT_PORT);
+    Settings swindow;
 
     app.connect(&window,SIGNAL(colorChanged(QColor)),&mqtt,SLOT(getColour(QColor)),Qt::DirectConnection);
     app.connect(window.traySettings,SIGNAL(triggered()),&swindow,SLOT(open()),Qt::DirectConnection);
 
     //connect all settings, which will be saved for the next time
-    app.connect(&swindow,SIGNAL(setNumLeds(int)),&mqtt,SLOT(getNumLeds(int)),Qt::DirectConnection);
+    app.connect(&swindow,SIGNAL(setNumLeds(uint8_t,bool)),&mqtt,SLOT(getNumLeds(uint8_t,bool)),Qt::DirectConnection);
+
     app.connect(&swindow,SIGNAL(setTopic(std::string)),&mqtt,SLOT(getTopic(std::string)),Qt::DirectConnection);
     app.connect(&swindow,SIGNAL(setAmbi(bool)),&mqtt,SLOT(getAmbi(bool)),Qt::DirectConnection);                               //start Ambi Background for light
     app.connect(&swindow,SIGNAL(setAmbi(bool)),&window,SLOT(getAmbi(bool)),Qt::DirectConnection);
