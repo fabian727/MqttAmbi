@@ -57,15 +57,15 @@ private:
 signals:
     void setAmbi(int checked);
     void colorChanged(QColor colour);
+    void sliderMoved(int white);
 
 public slots:
     void getAmbi(bool checked);
 
 private slots:
     void sOpen(void);                  //open window
-    void sText(QColor color);           //update textbox in window with current color
-    void sColor(void);                 //update colorwheel with color from textbox
-    void sColor(int);                 //update colorwheel with color from textbox
+    void setLine(void);           //update textbox in window with current color
+    void setColor(void);                 //update colorwheel with color from textbox
 };
 
 #endif // MAINWINDOW_H

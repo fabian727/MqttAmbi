@@ -1,29 +1,43 @@
 #ifndef _MQTTCLIENT_H_
 #define _MQTTCLIENT_H_
 
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#undef Bool
+#undef CursorShape
+#undef Expose
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef FontChange
+#undef None
+#undef Status
+#undef Unsorted
+
 #include <QThread> //QT needs to be first
 #include <QTimer>
-#include <mosquitto.h> //c-header
-#include <mosquittopp.h> //cpp-header equivalent
+#include <QColor>
+
+#include <mosquittopp.h>
 #include <iomanip> //uint8_t
 #include <string> //string
 
-#include "QColor"
-#include <X11/Xlib.h>
+
 
 using namespace std;
 
-#define MQTT_TOPIC_COLOUR this->topic + "/colour"
-#define MQTT_TOPIC_NUMLEDS this->topic + "/numleds"
+#define MQTT_TOPIC_COLOUR  "/colour"
+#define MQTT_TOPIC_NUMLEDS "/numleds"
 
 class MqttClient : public QThread, public mosqpp::mosquittopp
 {
     Q_OBJECT
 public:
-    explicit MqttClient(const char *id, const char *host, const char *topic, int port);
+    explicit MqttClient();
 	~MqttClient();
 
-    string topic;
+    QString topic;
     void createByteStream(int NumLeds, int NumColors, uint8_t *mqttStream, QColor *averageColor);
     void createStringStream(int NumLeds,int NumColors,char *mqttStream, QColor *averageColor);
     void maxBrightness();
@@ -34,6 +48,7 @@ private:
     void ambi();
     uint8_t leds;
     QTimer timer;
+    QString broker;
 
     //handle X11 display/image handling
     Display *display;
@@ -44,10 +59,9 @@ private:
 public slots:
     void getColour(QColor avgcolour);
     void getAmbi(bool checked);
-    void getNumLeds(uint8_t leds, bool save);
-    void getTopic(std::string maintopic);
+    void lightUpNumLeds(uint8_t leds);
     void getStop();
-
+    void loadConfigFile();
 private slots:
     void TimerHandlerFunction();
 };

@@ -1,12 +1,11 @@
-#include "../inc/draw_grid.h"
+#include "inc/draw_grid.h"
+#include "inc/debug.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
 void draw_grid (XImage* image) {
+    DEBUG_PRINT("");
 	FILE * file = NULL;
 	char filename[64];
 	sprintf(filename,"picture.ppm");
@@ -34,7 +33,8 @@ void draw_grid (XImage* image) {
 }
 
 void draw_led_grid (QColor *array, int width, int height) {
-	FILE * file = NULL;
+    DEBUG_PRINT("");
+    FILE * file = NULL;
 	char filename[64];
 	sprintf(filename,"leds.ppm");
 	file = fopen(filename,"w");

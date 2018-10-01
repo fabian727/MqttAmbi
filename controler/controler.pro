@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -22,24 +22,24 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-QMAKE_CXXFLAGS += -DLinuxX11
 LIBS += -lX11 -lmosquittopp
 
 SOURCES += \
     src/draw_grid.cpp \
-    src/gui.cpp \
     src/main.cpp \
     src/MqttClient.cpp \
-    src/settings.cpp \
-    src/terminal.cpp
+    src/terminal.cpp \
+    src/settingsWindow.cpp \
+    src/MainWindow.cpp
 
 HEADERS += \
     inc/config.h \
     inc/draw_grid.h \
-    inc/gui.h \
     inc/MqttClient.h \
-    inc/settings.h \
-    inc/terminal.h
+    inc/terminal.h \
+    inc/debug.h \
+    inc/settingsWindow.h \
+    inc/MainWindow.h
 
 FORMS += \
     settingswindow.ui

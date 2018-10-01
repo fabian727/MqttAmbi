@@ -1,3 +1,4 @@
+#include "../inc/debug.h"
 #include "../inc/terminal.h"
 
 #include <unistd.h>     // UNIX standard function definitions
@@ -5,7 +6,6 @@
 #include <errno.h>      // Error number definitions
 #include <termios.h>    // POSIX terminal control definitions
 #include <iostream>
-
 
 #include <stdio.h>
 #include <memory.h>
@@ -15,6 +15,7 @@
 //ToDo: port to windows!
 
 Terminal::Terminal() : QThread() {
+    DEBUG_PRINT("");
 #if defined(LinuxX11) || defined(LinuxWayland)
     fd = open("/dev/ttyUSB0", O_RDWR | O_NDELAY | O_NOCTTY);
     struct termios port_settings;      // structure to store the port settings in
@@ -56,6 +57,7 @@ Terminal::Terminal() : QThread() {
 }
 
 void Terminal::send(const char *data) {
+    DEBUG_PRINT("");
     char n = 0;
     fd_set rdfs;
     struct timeval timeout;
@@ -78,6 +80,7 @@ void Terminal::send(const char *data) {
 }  }
 
 void Terminal::receive(char *data) {
+    DEBUG_PRINT("");
     int n = 1;
     fd_set rdfs;
     struct timeval timeout;
@@ -100,6 +103,7 @@ void Terminal::receive(char *data) {
 }
 
 void Terminal::run() {
+    DEBUG_PRINT("");
     QColor colour;
     while(true)
     {
@@ -132,10 +136,12 @@ void Terminal::run() {
 }
 
 Terminal::~Terminal() {
+    DEBUG_PRINT("");
     close(fd);
 }
 
 void Terminal::setColour(int id, QColor colour) {
+    DEBUG_PRINT("");
     if(id == 1)
     {
         newDataOne = "";
@@ -147,6 +153,7 @@ void Terminal::setColour(int id, QColor colour) {
 }
 
 QColor Terminal::ambi(void) {
+    DEBUG_PRINT("");
     QPixmap pixmap = pixels->grabWindow(0) ;
     QImage screen = pixmap.toImage();
     QColor colour;
@@ -181,6 +188,7 @@ QColor Terminal::ambi(void) {
 }
 
 void Terminal::setAmbi(bool checked) {
+    DEBUG_PRINT("");
     AmbiOne = checked;
     string data = "1:255,0,0!\n\r";
     send(&data[0]);

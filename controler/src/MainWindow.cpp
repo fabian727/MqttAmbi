@@ -1,4 +1,6 @@
-#include "../inc/gui.h"
+
+#include "inc/gui.h"
+#include "inc/debug.h"
 
 #include <QWidgetAction>
 #include <QSlider>
@@ -7,11 +9,19 @@ using namespace std;
 using namespace color_widgets;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+    DEBUG_PRINT("");
     setup_win(this);
     setup_tray(this);
 }
 
 void MainWindow::setup_win(MainWindow *window) {
+    DEBUG_PRINT("");
+    /*reset the color to black*/
+    activeColor.setAlpha(0);
+    activeColor.setRed(0);
+    activeColor.setGreen(0);
+    activeColor.setBlue(0);
+
     /*set up the main window */
     QScreen *ratio = QGuiApplication::primaryScreen();
     window->setGeometry(ratio->geometry().width()-250,0,250,250);
@@ -22,14 +32,15 @@ void MainWindow::setup_win(MainWindow *window) {
     QWidget     *windowCentral    = new QWidget(window);
     QGridLayout *windowLayout     = new QGridLayout(windowCentral);
     windowColorWheel = new ColorWheel(window);
-    windowLine = new QLineEdit(window);
 
     windowWhiteSlider = new QSlider(window);
-    windowWhiteSlider->setMinimum(0);
-    windowWhiteSlider->setMaximum(255);
+    windowWhiteSlider->setRange(0,255);
     windowWhiteSlider->setOrientation(Qt::Horizontal);
+    windowWhiteSlider->setTickInterval(1);
+    windowWhiteSlider->setSingleStep(1);
+    windowWhiteSlider->setPageStep(10);
 
-
+    windowLine = new QLineEdit(window);
     windowLine->setMaximumWidth(100);
 
     windowLayout->setObjectName("centralLayout");
@@ -53,14 +64,19 @@ void MainWindow::setup_win(MainWindow *window) {
 
     /* window connections */
     connect(windowActionClose,SIGNAL(triggered()),window,SLOT(close()),Qt::DirectConnection);                    //close by Ctrl+W
-    connect(windowColorWheel,SIGNAL(colorChanged(QColor)),window,SLOT(sText(QColor)),Qt::DirectConnection);      //if color wheel is changed, change text line
-    connect(windowWhiteSlider,SIGNAL(sliderMoved(int)),window,SLOT(sColor(int)),Qt::DirectConnection);
-    connect(windowLine,SIGNAL(editingFinished()),window,SLOT(sColor()),Qt::DirectConnection);
-    connect(windowLine,SIGNAL(returnPressed()),window,SLOT(sColor()),Qt::DirectConnection);
+
+    //colorwheel or slider changed, update the textline
+    connect(windowColorWheel,SIGNAL(colorChanged(QColor)),window,SLOT(setLine(void)),Qt::DirectConnection);      //if color wheel is changed, change text line
+    connect(windowWhiteSlider,SIGNAL(valueChanged(int)),window,SLOT(setLine(void)),Qt::DirectConnection);
+
+    //the textline was changed, update colorwheel and slider
+    connect(windowLine,SIGNAL(editingFinished()),window,SLOT(setColor()),Qt::DirectConnection);
+    connect(windowLine,SIGNAL(returnPressed()),window,SLOT(setColor()),Qt::DirectConnection);
 
 }
 
 void MainWindow::setup_tray(MainWindow *window) {
+    DEBUG_PRINT("");
 
     QSize *size = new QSize();
     size->setHeight(50);
@@ -80,11 +96,11 @@ void MainWindow::setup_tray(MainWindow *window) {
     trayActionOpen = new QAction(traymenu);
     trayActionOpen->setText("change Color");
 
-    trayActionQuit = new QAction(traymenu);
-    trayActionQuit->setText("Quit RGB");
-
     traySettings = new QAction(traymenu);
     traySettings->setText("Settings");
+
+    trayActionQuit = new QAction(traymenu);
+    trayActionQuit->setText("Quit RGB");
 
     traymenu->addSeparator();
     traymenu->addAction(trayActionAmbi);
@@ -110,50 +126,68 @@ void MainWindow::setup_tray(MainWindow *window) {
  * Slots
  *
  */
-void MainWindow::sOpen() {
+
+//if window is new opened
+void MainWindow::sOpen(void) {
+    DEBUG_PRINT("");
     QColor color = windowColorWheel->color();
-    sText(color);
+    color.setAlpha(windowWhiteSlider->value());
+    setLine();
     trayActionAmbi->setChecked(false);
+    windowLine->setFocus(Qt::NoFocusReason);
     this->show();
 }
 
 
-void MainWindow::sText(QColor color) {
-    QString colour = "#";
-    QString buffer = "";
-    if(buffer.setNum(color.red(),16).length() == 1)
-    { buffer.append('0'); }
-    colour.append(buffer);
-    if(buffer.setNum(color.green(),16).length() == 1)
-    { buffer.append('0'); }
-    colour.append(buffer);
-    if(buffer.setNum(color.blue(),16).length() == 1)
-    { buffer.append('0'); }
-    colour.append(buffer);
-    windowLine->setText(colour);
-    emit colorChanged(color);
-}
-
-void MainWindow::sColor(void) {
-    QString color = windowLine->text();
-    activeColor.setRed( color.mid(1,2).toInt(NULL,16));
-    activeColor.setGreen(color.mid(3,2).toInt(NULL,16));
-    activeColor.setBlue(color.mid(5.2).toInt(NULL,16));
-    windowColorWheel->setColor(activeColor);
-    emit colorChanged(activeColor);
-}
-
-void MainWindow::sColor(int white) {
-    QString color = windowLine->text();
-    activeColor.setRed( color.mid(1,2).toInt(NULL,16));
-    activeColor.setGreen(color.mid(3,2).toInt(NULL,16));
-    activeColor.setBlue(color.mid(5.2).toInt(NULL,16));
+//colorwheel or slider changed, reload the textline
+void MainWindow::setLine(void) {
+    DEBUG_PRINT("");
+    activeColor = windowColorWheel->color();
+    int white = windowWhiteSlider->value();
+    if(white > 255) {
+        white = 255;
+    } else if(white < 0) {
+        white = 0;
+    }
     activeColor.setAlpha(white);
-    windowColorWheel->setColor(activeColor);
+
+    //setup the string. If one color has only 1 digit, prepend a zero.
+    QString linecolor = "#";
+    QString buffer = "";
+    if(buffer.setNum(activeColor.red(),16).length() == 1) {
+        linecolor.append('0');
+    }
+    linecolor.append(buffer);
+    if(buffer.setNum(activeColor.green(),16).length() == 1) {
+        linecolor.append('0');
+    }
+    linecolor.append(buffer);
+    if(buffer.setNum(activeColor.blue(),16).length() == 1) {
+        linecolor.append('0');
+    }
+    linecolor.append(buffer);
+    if(buffer.setNum(activeColor.alpha(),16).length() == 1) {
+        linecolor.append('0');
+    }
+    linecolor.append(buffer);
+    windowLine->setText(linecolor);
     emit colorChanged(activeColor);
 }
 
+//textline changed, update colorwheel and slider
+void MainWindow::setColor(void) {
+    DEBUG_PRINT("");
+    QString color = windowLine->text();
+    activeColor.setRed(  color.mid(1,2).toInt(NULL,16));
+    activeColor.setGreen(color.mid(3,2).toInt(NULL,16));
+    activeColor.setBlue( color.mid(5,2).toInt(NULL,16));
+    activeColor.setAlpha(color.mid(7,2).toInt(NULL,16));
+    windowWhiteSlider->setValue(activeColor.alpha());
+    windowColorWheel->setColor(activeColor);
+    emit colorChanged(activeColor);
+}
 
 void MainWindow::getAmbi(bool checked) {
+    DEBUG_PRINT("");
     trayActionAmbi->setChecked(checked);
 }

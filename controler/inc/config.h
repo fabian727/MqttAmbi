@@ -22,4 +22,8 @@
 #define MQTT_COLORS 4
 //number of default stripes, which are spoken to
 #define MQTT_STRIPES 1
+#define MQTT_SCHEME "GRBW"
+
+#define NUM_LEDS_PER_STRIPE MQTT_LEDS
+#define NUM_LEDS_PER_DISPLAY 32
 #endif // CONFIG_H
